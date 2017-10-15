@@ -1,0 +1,81 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
+
+public partial class index : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        datalistBind();
+    }
+
+    protected void lbtnFirst_Click(object sender, EventArgs e)
+    {
+        lblCurrent.Text = "1";
+        datalistBind();
+    }
+
+    protected void lbntUp_Click(object sender, EventArgs e)
+    {
+        lblCurrent.Text = (Convert.ToInt32(lblCurrent.Text) - 1).ToString();
+        datalistBind();
+    }
+
+    protected void lbtnDown_Click(object sender, EventArgs e)
+    {
+        lblCurrent.Text = (Convert.ToInt32(lblCurrent.Text) + 1).ToString();
+        datalistBind();
+    }
+
+    protected void lbtnLast_Click(object sender, EventArgs e)
+    {
+        lblCurrent.Text = lblTotal.Text;
+    }
+    public void datalistBind()
+    {
+        int current_page = Convert.ToInt32(lblCurrent.Text);
+        string strcon = "Data Source=DESKTOP-BRRT43V;Initial Catalog=db_SIS;Persist Security Info=True;User ID=sa;Password=123456";
+        SqlConnection conn = new SqlConnection(strcon);
+        conn.Open();
+        SqlDataAdapter da = new SqlDataAdapter("select  *from tb_LeaguerInfo", conn);
+        DataSet ds = new DataSet();
+        da.Fill(ds, "tb_LeaguerInfo");
+        PagedDataSource ps = new PagedDataSource();
+
+
+        ps.DataSource = ds.Tables["tb_LeaguerInfo"].DefaultView;
+
+        //ps.DataSource = GetRoomType();
+
+        ps.AllowPaging = true;
+        ps.PageSize = 10;
+        datainfo.DataSource = ps;
+        datainfo.DataBind();
+        lblTotal.Text = ps.PageCount.ToString();
+        ps.CurrentPageIndex = current_page - 1;
+        lbtnFirst.Enabled = true;
+        lbtnDown.Enabled = true;
+        lbntUp.Enabled = true;
+        lbtnLast.Enabled = true;
+        if (current_page == 1)
+        {
+            lbtnFirst.Enabled = false;
+            lbntUp.Enabled = false;
+
+        }
+        if (current_page == Convert.ToInt32(lblTotal.Text))
+        {
+            lbtnDown.Enabled = false;
+            lbtnLast.Enabled = false;
+        }
+        datainfo.DataSource = ps;
+        datainfo.DataKeyField = "ID";
+        datainfo.DataBind();
+        conn.Close();
+    }
